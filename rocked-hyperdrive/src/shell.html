@@ -1,0 +1,341 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>RockED Hyperdrive</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one portrait stage. The canvas is the world; DOM layers are the cockpit glass laid over it. */
+:root{
+  --void:#06051A; --navy:#0D0A26; --panel:#16113A; --panel2:#1F1850; --line:#352C74;
+  --violet:#622FEE; --violet2:#7A5AF8; --lilac:#BCACFF; --ink:#F4F1FF; --mute:#A099CC;
+  --cyan:#3FE0FF; --amber:#FFB238; --pink:#FF4D8D; --good:#5CF2B0;
+  --display:'Unbounded','Arial Black','Segoe UI',system-ui,sans-serif;
+  --body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--void);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;overflow:hidden;overscroll-behavior:none;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+#stage{position:relative;height:100%;width:100%;max-width:540px;margin:0 auto;overflow:hidden;background:var(--navy)}
+@media (min-width:541px){#stage{box-shadow:0 0 0 1px var(--line),0 0 90px rgba(98,47,238,.28)}}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.layer{position:absolute;inset:0;display:flex;flex-direction:column;
+  padding-block:18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lilac)}
+.brandbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+.brandbar .eyebrow b{color:var(--ink)}
+.iconbtn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(22,17,58,.72);border:1px solid var(--line)}
+.iconbtn svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.iconrow{display:flex;gap:8px}
+.btn{min-height:54px;border-radius:16px;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.06em;width:100%;
+  display:flex;align-items:center;justify-content:center;gap:10px;padding:0 18px;transition:transform .12s ease,filter .12s ease}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(180deg,var(--violet2),var(--violet));box-shadow:0 5px 0 #3B17A8,0 14px 34px rgba(98,47,238,.5)}
+.btn.primary:active{box-shadow:0 2px 0 #3B17A8,0 8px 20px rgba(98,47,238,.5);transform:translateY(3px)}
+.btn.ghost{background:rgba(22,17,58,.78);border:1px solid var(--line);font-size:12px;min-height:48px}
+.btn.small{min-height:44px;font-size:11px;width:auto;padding:0 14px;border-radius:12px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px}
+.row>*{flex:1;min-width:0}
+.sub{color:var(--mute);font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+
+/* load */
+#load{align-items:center;justify-content:center;gap:16px;background:var(--navy);z-index:9}
+#load .bar{width:140px;height:4px;border-radius:4px;background:var(--panel2);overflow:hidden}
+#load .bar i{display:block;height:100%;width:40%;background:var(--cyan);border-radius:4px;animation:ld 1s ease-in-out infinite alternate}
+@keyframes ld{from{transform:translateX(-20%)}to{transform:translateX(170%)}}
+
+/* home */
+#home{justify-content:space-between}
+.lockup{text-align:center;margin-top:6px}
+.lockup h1{font-family:var(--display);font-weight:900;font-size:clamp(30px,10.4vw,48px);line-height:.95;letter-spacing:-.01em;margin:6px 0 0;
+  background:linear-gradient(180deg,#fff 20%,var(--lilac) 70%,var(--violet2));-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 6px 24px rgba(122,90,248,.55))}
+.lockup p{margin:8px 0 0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:99px;background:rgba(22,17,58,.78);border:1px solid var(--line);color:var(--lilac)}
+.chip i{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good)}
+.chip.off i{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.homefoot{display:flex;flex-direction:column;gap:12px}
+.pbline{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:0 4px}
+.pbline b{font-family:var(--display);font-size:16px}
+.podium{display:flex;flex-direction:column;gap:4px;background:rgba(13,10,38,.72);border:1px solid var(--line);border-radius:14px;padding:10px 12px;backdrop-filter:blur(6px)}
+.podium .ln{display:flex;gap:10px;align-items:baseline;font-size:13px}
+.podium .ln span:nth-child(1){width:18px;color:var(--amber);font-weight:700}
+.podium .ln span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podium .ln span:nth-child(3){font-weight:700}
+
+/* sheets (name, settings, pause, tutorial) */
+.scrim{background:rgba(6,5,26,.74);backdrop-filter:blur(8px);justify-content:center;z-index:6}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:22px;padding:22px 18px;display:flex;flex-direction:column;gap:14px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);max-height:100%;overflow:auto}
+.card h2{font-family:var(--display);font-size:20px;line-height:1.15;margin:0;text-wrap:balance}
+.field{width:100%;min-height:54px;border-radius:14px;border:1.5px solid var(--line);background:var(--navy);color:var(--ink);font:600 17px var(--body);padding:0 16px;
+  -webkit-user-select:text;user-select:text}
+.field:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 4px rgba(63,224,255,.16)}
+.err{color:var(--pink);font-size:13px;min-height:18px;margin:-6px 0 -4px}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;border-bottom:1px solid rgba(53,44,116,.6)}
+.setrow:last-of-type{border-bottom:0}
+.tog{width:52px;height:30px;border-radius:99px;background:var(--navy);border:1px solid var(--line);position:relative;flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--mute);transition:transform .15s,background .15s}
+.tog[aria-pressed="true"]{background:var(--violet)}
+.tog[aria-pressed="true"]::after{transform:translateX(22px);background:#fff}
+.cue{display:flex;gap:14px;align-items:center}
+.cue .pic{width:64px;height:64px;border-radius:16px;background:var(--navy);border:1px solid var(--line);display:grid;place-items:center;flex:none;position:relative;overflow:hidden}
+.cue b{display:block;font-family:var(--display);font-size:13px;letter-spacing:.04em}
+.cue .hand{width:18px;height:18px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan);animation:drag 1.4s ease-in-out infinite alternate}
+@keyframes drag{from{transform:translateX(-16px)}to{transform:translateX(16px)}}
+.cue .bst{width:38px;height:38px;border-radius:50%;border:3px solid var(--amber);display:grid;place-items:center;font:700 8px var(--display);color:var(--amber);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.12);box-shadow:0 0 18px rgba(255,178,56,.7)}}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:11px;color:var(--mute);text-align:center}
+.legend i{display:block;width:14px;height:14px;margin:0 auto 5px}
+.lg-c{background:var(--cyan);transform:rotate(45deg);border-radius:2px}
+.lg-p{background:var(--pink);clip-path:polygon(50% 0,63% 30%,100% 25%,72% 52%,90% 90%,50% 70%,10% 90%,28% 52%,0 25%,37% 30%)}
+.lg-a{background:var(--amber);border-radius:50%}
+
+/* HUD */
+#hud{padding-block:10px;pointer-events:none}
+#prog{position:absolute;left:0;right:0;top:0;height:4px;display:flex;gap:2px}
+#prog span{background:rgba(188,172,255,.16);position:relative;overflow:hidden}
+#prog span i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);background:var(--violet2)}
+#prog span:nth-child(3) i{background:var(--amber)}#prog span:nth-child(5) i{background:var(--pink)}
+.hudtop{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px}
+#score{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+#pace{font-size:11px;font-weight:700;min-height:16px;color:var(--mute)}
+#pace.up{color:var(--good)}#pace.dn{color:var(--pink)}
+#multbox{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:2px}
+#mult{font-family:var(--display);font-weight:900;font-size:22px;color:var(--amber);line-height:1;transition:transform .12s;text-shadow:0 0 16px rgba(255,178,56,.5)}
+#mult.bump{transform:scale(1.45)}
+#mult.route{color:#fff;text-shadow:0 0 18px var(--amber),0 0 4px var(--amber)}
+#streak{display:flex;gap:3px}
+#streak i{width:9px;height:3px;border-radius:2px;background:rgba(255,178,56,.22)}
+#streak i.on{background:var(--amber)}
+.hudright{display:flex;justify-content:flex-end;align-items:center;gap:8px}
+#timer{font-family:var(--display);font-weight:700;font-size:20px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+#timer.hot{color:var(--pink)}
+#pauseBtn{pointer-events:auto;width:44px;height:44px}
+#bossbar{margin:10px auto 0;width:78%;display:flex;flex-direction:column;gap:4px;align-items:center}
+#bossbar .t{font:700 10px var(--display);letter-spacing:.14em;color:var(--pink)}
+#bossbar .b{width:100%;height:8px;border-radius:6px;background:rgba(255,77,141,.18);border:1px solid rgba(255,77,141,.5);overflow:hidden}
+#bossbar .b i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),#FF9DC0);transform-origin:left;transition:transform .12s}
+#callout{position:absolute;left:0;right:0;top:13.5%;text-align:center;padding:0 16px;opacity:0;transform:translateY(8px) scale(.96);transition:opacity .18s,transform .18s}
+#callout.on{opacity:1;transform:none}
+#callout b{display:block;font-family:var(--display);font-weight:900;font-size:clamp(20px,6.6vw,30px);letter-spacing:.02em;text-shadow:0 4px 26px rgba(0,0,0,.8)}
+#callout span{display:block;font-size:13px;font-weight:600;color:var(--lilac);margin-top:4px;text-shadow:0 2px 10px rgba(0,0,0,.9)}
+#callout.pink b{color:var(--pink)}#callout.cyan b{color:var(--cyan)}#callout.amber b{color:var(--amber)}
+#portalcue{position:absolute;left:0;right:0;top:42%;display:flex;justify-content:space-between;padding:0 14px;gap:10px}
+.pc{flex:1;max-width:46%;border-radius:14px;padding:8px 10px;font-size:11px;font-weight:600;line-height:1.3;background:rgba(6,5,26,.72);backdrop-filter:blur(4px)}
+.pc b{display:block;font:700 12px var(--display);letter-spacing:.06em;margin-bottom:2px}
+.pc.safe{border:1.5px solid var(--cyan)}.pc.safe b{color:var(--cyan)}
+.pc.risk{border:1.5px solid var(--amber)}.pc.risk b{color:var(--amber)}
+.hudbot{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px))}
+#shieldbox{display:flex;flex-direction:column;gap:8px}
+#fx{display:flex;gap:6px;min-height:26px}
+.fxchip{font:700 9px var(--display);letter-spacing:.06em;padding:5px 8px;border-radius:8px;background:rgba(6,5,26,.7);border:1px solid currentColor;position:relative;overflow:hidden}
+.fxchip i{position:absolute;left:0;bottom:0;height:2px;background:currentColor;width:100%;transform-origin:left}
+#pips{display:flex;gap:6px;align-items:center}
+#pips .lbl{font:700 9px var(--display);letter-spacing:.14em;color:var(--mute);margin-right:2px}
+#pips i{width:22px;height:10px;border-radius:3px;transform:skewX(-18deg);background:rgba(63,224,255,.14);border:1px solid rgba(63,224,255,.4)}
+#pips i.on{background:var(--cyan);box-shadow:0 0 12px rgba(63,224,255,.7)}
+#pips.hurt{animation:hurt .4s}
+@keyframes hurt{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+#boost{pointer-events:auto;width:84px;height:84px;border-radius:50%;position:relative;display:grid;place-items:center;
+  background:conic-gradient(var(--amber) calc(var(--c,0)*1turn),rgba(53,44,116,.9) 0);touch-action:none}
+#boost::before{content:"";position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2A2168,var(--navy))}
+#boost span{position:relative;font:700 11px var(--display);letter-spacing:.08em;color:var(--mute)}
+#boost.full{animation:pulse 0.8s ease-in-out infinite}
+#boost.full::before{background:radial-gradient(circle at 50% 35%,#FFD27A,var(--amber))}
+#boost.full span{color:#2B1600}
+#boost.live::before{background:radial-gradient(circle at 50% 35%,#fff,var(--cyan))}
+#flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:var(--pink);mix-blend-mode:screen}
+#big{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font:900 clamp(56px,22vw,110px) var(--display);opacity:0}
+#big.on{animation:big .7s ease-out}
+@keyframes big{0%{opacity:0;transform:scale(1.8)}25%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.8)}}
+
+/* results */
+#results{overflow:auto;gap:12px;background:linear-gradient(180deg,rgba(6,5,26,.55),rgba(6,5,26,.9) 46%)}
+.rhead{text-align:center;margin-top:4px}
+#rscore{font-family:var(--display);font-weight:900;font-size:clamp(44px,15vw,64px);line-height:1;margin:6px 0 0;
+  background:linear-gradient(180deg,#fff,var(--lilac));-webkit-background-clip:text;background-clip:text;color:transparent}
+#rgrade{display:inline-flex;gap:8px;align-items:center;margin-top:10px;padding:6px 12px;border-radius:99px;border:1px solid var(--amber);color:var(--amber);font:700 11px var(--display);letter-spacing:.08em}
+#rnew{color:var(--good);font:700 11px var(--display);letter-spacing:.14em;min-height:16px;margin-top:8px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stat{background:rgba(22,17,58,.82);border:1px solid var(--line);border-radius:12px;padding:9px 6px;text-align:center}
+.stat b{display:block;font:700 16px var(--display)}
+.stat span{font-size:10px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+#rsync{display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:14px;padding:10px 12px;background:rgba(22,17,58,.82);border:1px solid var(--line);font-size:13px;min-height:56px}
+#rsync .txt{min-width:0}
+#rsync b{display:block;font-size:14px}
+#rsync.ok{border-color:rgba(92,242,176,.55)}#rsync.bad{border-color:var(--pink)}#rsync.wait{border-color:var(--amber)}
+.grow{flex:1}
+
+/* leaderboard */
+#board{background:rgba(6,5,26,.9);backdrop-filter:blur(10px);gap:12px;z-index:5}
+.tabs{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px}
+.tabs button{flex:1;min-height:44px;border-radius:10px;font:700 11px var(--display);letter-spacing:.08em;color:var(--mute)}
+.tabs button[aria-selected="true"]{background:var(--violet);color:#fff}
+#lbmeta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--mute)}
+#lbnote{font-size:12px;color:var(--amber);min-height:0}
+#lblist{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.lb{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(22,17,58,.8);border:1px solid transparent;font-size:14px}
+.lb .rk{font:700 13px var(--display);color:var(--mute)}
+.lb:nth-child(1) .rk{color:var(--amber)}.lb:nth-child(2) .rk{color:#D9D6EC}.lb:nth-child(3) .rk{color:#E89A6B}
+.lb .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb .sc{font:700 14px var(--display)}
+.lb.you{border-color:var(--cyan);background:rgba(63,224,255,.1)}
+.lb.you .nm::after{content:" (you)";color:var(--cyan);font-weight:500}
+.lb.sep{margin-top:8px}
+.empty{margin:auto;text-align:center;color:var(--mute);padding:20px}
+.empty b{display:block;color:var(--ink);font:700 15px var(--display);margin-bottom:6px}
+#lbyou{font-size:13px;text-align:center;color:var(--lilac);min-height:20px}
+
+#rotate{background:var(--navy);z-index:20;align-items:center;justify-content:center;text-align:center;gap:10px}
+#toast{position:absolute;left:50%;bottom:110px;transform:translate(-50%,10px);background:var(--ink);color:var(--navy);font-weight:600;font-size:13px;padding:9px 14px;border-radius:99px;opacity:0;transition:.2s;pointer-events:none;z-index:30;max-width:88%;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media (max-height:600px){.lockup h1{font-size:30px}.podium{display:none}#boost{width:72px;height:72px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+
+<div id="stage">
+  <canvas id="cv" aria-label="Game playfield"></canvas>
+
+  <div id="load" class="layer">
+    <div class="eyebrow"><b>RockED</b> &nbsp;/&nbsp; Hyperdrive</div>
+    <div class="bar"><i></i></div>
+  </div>
+
+  <section id="home" class="layer" hidden>
+    <div>
+      <div class="brandbar">
+        <div class="eyebrow"><b>RockED</b> &nbsp;/&nbsp; Hyperdrive</div>
+        <div class="iconrow">
+          <button class="iconbtn" id="muteBtn" aria-label="Sound on" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="muteWave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+          <button class="iconbtn" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button>
+        </div>
+      </div>
+      <div class="lockup">
+        <h1>HYPERDRIVE</h1>
+        <p>45 seconds of chaos</p>
+      </div>
+    </div>
+    <div class="homefoot">
+      <div style="text-align:center"><span class="chip" id="courseChip"><i></i><span id="courseTxt">This week's course</span></span></div>
+      <div class="podium" id="podium" hidden></div>
+      <div class="pbline"><span class="sub">Personal best</span><b class="num" id="homePb">No flights yet</b></div>
+      <button class="btn primary" id="playBtn">PLAY</button>
+      <button class="btn ghost" id="homeLbBtn">LEADERBOARD</button>
+    </div>
+  </section>
+
+  <section id="hud" class="layer" hidden>
+    <div id="prog" aria-hidden="true"><span style="flex:7"><i></i></span><span style="flex:10"><i></i></span><span style="flex:10"><i></i></span><span style="flex:8"><i></i></span><span style="flex:10"><i></i></span></div>
+    <div class="hudtop">
+      <div><div id="score" class="num">0</div><div id="pace" class="num"></div></div>
+      <div id="multbox"><div id="mult">x1</div><div id="streak"><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="hudright"><div id="timer" class="num">0:45</div>
+        <button class="iconbtn" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg></button></div>
+    </div>
+    <div id="bossbar" hidden><div class="t">THE OBJECTION</div><div class="b"><i id="bosshp"></i></div></div>
+    <div id="callout"><b></b><span></span></div>
+    <div id="portalcue" hidden>
+      <div class="pc" id="pcL"><b></b><span></span></div>
+      <div class="pc" id="pcR"><b></b><span></span></div>
+    </div>
+    <div class="hudbot">
+      <div id="shieldbox">
+        <div id="fx"></div>
+        <div id="pips" aria-label="Shields"><span class="lbl">SHIELD</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+      </div>
+      <button id="boost" aria-label="Boost" style="--c:0"><span>BOOST</span></button>
+    </div>
+    <div id="flash"></div>
+    <div id="big"></div>
+  </section>
+
+  <section id="tut" class="layer scrim" hidden>
+    <div class="card">
+      <div class="eyebrow">Flight school, 10 seconds</div>
+      <div class="cue"><div class="pic"><div class="hand"></div></div><div><b>DRAG TO STEER</b><span class="sub">Slide anywhere on the track. Your ship fires on its own.</span></div></div>
+      <div class="cue"><div class="pic"><div class="bst">BOOST</div></div><div><b>TAP BOOST WHEN FULL</b><span class="sub">Crystals, kills and near misses charge it. Boosting smashes through everything.</span></div></div>
+      <div class="legend"><div><i class="lg-c"></i>Cyan: collect</div><div><i class="lg-p"></i>Pink: avoid</div><div><i class="lg-a"></i>Amber: risk for reward</div></div>
+      <button class="btn primary" id="tutGo">START FLIGHT</button>
+      <button class="btn ghost" id="tutSkip">SKIP, I'VE GOT THIS</button>
+    </div>
+  </section>
+
+  <section id="name" class="layer scrim" hidden>
+    <form class="card" id="nameForm" novalidate>
+      <div class="eyebrow">Pilot check-in</div>
+      <h2 id="nameTitle">What should we call you?</h2>
+      <label class="sr" for="nameIn">Display name</label>
+      <input class="field" id="nameIn" maxlength="24" autocomplete="nickname" autocapitalize="words" spellcheck="false" placeholder="Your name" enterkeyhint="go">
+      <div class="err" id="nameErr" role="alert"></div>
+      <button class="btn primary" id="nameGo" type="submit">START FLIGHT</button>
+      <button class="btn ghost" id="nameCancel" type="button">BACK</button>
+      <p class="sub" style="margin:0">No login. No email. Your name shows on the leaderboard to anyone who can open this game, so keep it to a name you are happy to share.</p>
+    </form>
+  </section>
+
+  <section id="results" class="layer" hidden>
+    <div class="rhead">
+      <div class="eyebrow" id="rtitle">Run complete</div>
+      <div id="rscore" class="num">0</div>
+      <div><span id="rgrade"></span></div>
+      <div id="rnew"></div>
+    </div>
+    <div class="statgrid" id="rstats"></div>
+    <div id="rsync" class="wait"><div class="txt"><b id="rsyncT">Saving score</b><span class="sub" id="rsyncS"></span></div><button class="btn ghost small" id="rretry" hidden>RETRY</button></div>
+    <div class="grow"></div>
+    <div class="stack">
+      <button class="btn primary" id="againBtn">PLAY AGAIN</button>
+      <div class="row">
+        <button class="btn ghost" id="resLbBtn">LEADERBOARD</button>
+        <button class="btn ghost" id="copyBtn">COPY RESULT</button>
+      </div>
+      <button class="btn ghost" id="resHomeBtn">HOME</button>
+    </div>
+  </section>
+
+  <section id="board" class="layer" hidden>
+    <div class="brandbar"><div class="eyebrow"><b>Leaderboard</b></div><button class="iconbtn" id="lbClose" aria-label="Close leaderboard"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="tabs" role="tablist"><button role="tab" id="tabW" aria-selected="true">THIS WEEK</button><button role="tab" id="tabA" aria-selected="false">ALL-TIME</button></div>
+    <div id="lbmeta"><span id="lbcourse"></span><span id="lbreset" class="num"></span></div>
+    <div id="lbnote"></div>
+    <ol id="lblist"></ol>
+    <div id="lbyou"></div>
+    <p class="sub" style="margin:0;font-size:11px;text-align:center">Names are self-chosen and not verified. Same name on two devices shows as two pilots.</p>
+  </section>
+
+  <section id="pause" class="layer scrim" hidden>
+    <div class="card">
+      <div class="eyebrow">Clock stopped</div>
+      <h2>Paused</h2>
+      <button class="btn primary" id="resumeBtn">RESUME</button>
+      <div class="row"><button class="btn ghost" id="restartBtn">RESTART</button><button class="btn ghost" id="quitBtn">QUIT</button></div>
+    </div>
+  </section>
+
+  <section id="settings" class="layer scrim" hidden>
+    <div class="card">
+      <div class="brandbar" style="min-height:0"><h2>Settings</h2><button class="iconbtn" id="setClose" aria-label="Close settings"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div>
+        <div class="setrow"><span>Sound</span><button class="tog" id="tSound" aria-label="Sound" aria-pressed="true"></button></div>
+        <div class="setrow"><span>Vibration</span><button class="tog" id="tHaptic" aria-label="Vibration" aria-pressed="true"></button></div>
+        <div class="setrow"><span>Reduced effects<br><span class="sub">Less shake, fewer particles, saves battery</span></span><button class="tog" id="tLow" aria-label="Reduced effects" aria-pressed="false"></button></div>
+        <div class="setrow"><span>Pilot name<br><span class="sub" id="setName"></span></span><button class="btn ghost small" id="renameBtn">CHANGE</button></div>
+      </div>
+      <button class="btn ghost" id="tutAgain">REPLAY FLIGHT SCHOOL</button>
+      <p class="sub" style="margin:0;font-size:12px" id="privacy">We store your display name and best scores so the leaderboard works. Nothing else is asked for or kept. Your pilot identity lives in this browser; clearing it starts a new pilot.</p>
+    </div>
+  </section>
+
+  <section id="rotate" class="layer" hidden><div class="eyebrow">Hyperdrive flies in portrait</div><h2 style="font-family:var(--display);margin:0">Rotate your phone</h2><p class="sub" style="margin:0">Your run is paused.</p></section>
+  <div id="toast" role="status"></div>
+  <div class="sr" id="live" aria-live="polite"></div>
+</div>
+<script>
+/*__JS__*/
+</script>
